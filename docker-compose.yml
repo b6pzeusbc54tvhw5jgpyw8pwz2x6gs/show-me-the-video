@@ -1,0 +1,36 @@
+version: '2.1'
+services:
+  server:
+    image: node:10.14-stretch
+    #build:
+    #  context: .
+    #  dockerfile: ./Dockerfile
+    networks:
+      - withtraefik
+    ports:
+      - "8989:3000"
+    volumes:
+      - ./:/root
+    working_dir: /root
+    labels:
+      - traefik.frontend.rule=Host:$SMTV_DOMAIN
+      - traefik.port=3000
+      - traefik.enable=true
+    environment:
+      - SMTV_CLONE_REPO_URL=$SMTV_CLONE_REPO_URL
+      - SMTV_PUBLIC_REPO_URL=$SMTV_PUBLIC_REPO_URL
+      - SMTV_TITLE=$SMTV_TITLE
+      - SMTV_REPO_TYPE=$SMTV_REPO_TYPE
+      - SMTV_SHOW_LAYOUT=$SMTV_SHOW_LAYOUT
+      - SMTV_MANAGER_ID=$SMTV_MANAGER_ID
+      - SMTV_URL=$SMTV_URL
+      - BUILD_ONLY=true
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - "npx next build src && npx next start src"
+
+networks:
+  withtraefik:
+    external:
+      name: traefik_webgateway
