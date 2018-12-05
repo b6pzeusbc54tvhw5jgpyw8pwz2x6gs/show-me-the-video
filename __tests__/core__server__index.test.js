@@ -4,9 +4,10 @@ import fs from "fs"
 import path from 'path'
 import sinon from 'sinon'
 import to from 'await-to-js'
-import { Repository, Error as NodeGitError } from 'nodegit'
+
 import mktemp from 'mktemp'
 import rimraf from 'rimraf'
+import { CONST_DIR_NAME } from '../src/core/constant'
 
 import server, { getVideoInfoArr } from '../src/core/server'
 
@@ -31,88 +32,75 @@ describe("check getRepo", () => {
   beforeAll( () => rimraf.sync(dirName))
 
   it('should works: getRepo(validUrl) x 2', async () => {
-    const fakeClone = sinon.fake( server.__get__('Clone'))
-    const fakeOpen = sinon.fake( server.__get__('Repository').open)
+    // const fakeClone = sinon.fake( server.__get__('Clone'))
+    // const fakeOpen = sinon.fake( server.__get__('Repository').open)
     const fakeGetPathFromGitRepoUrl = sinon.fake.returns(dirName)
 
-    server.__set__('Clone', fakeClone)
-    server.__set__('Repository', { open: fakeOpen })
+    // server.__set__('Clone', fakeClone)
+    // server.__set__('Repository', { open: fakeOpen })
     server.__set__('getPathFromGitRepoUrl', fakeGetPathFromGitRepoUrl )
 
-    const [err,repo] = await to(server.__get__('getRepo')(validUrl))
+    const [err,repoPath] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(1)
     expect(fakeGetPathFromGitRepoUrl.getCall(0).args[0]).toBe(validUrl)
-    expect(fakeOpen.callCount).toBe(1)
-    expect(fakeOpen.getCall(0).args[0]).toBe(dirName)
-    expect(fakeClone.callCount).toBe(1)
-    expect(fakeClone.getCall(0).args[0]).toBe(validUrl)
+    // expect(fakeOpen.callCount).toBe(1)
+    // expect(fakeOpen.getCall(0).args[0]).toBe(dirName)
+    // expect(fakeClone.callCount).toBe(1)
+    // expect(fakeClone.getCall(0).args[0]).toBe(validUrl)
     expect(err ).toBeNull()
-    expect(repo.constructor ).toBe( Repository )
-    expect(repo.path()).toBe(`${path.resolve(dirName)}/.git/`)
+    expect(repoPath).toBe(dirName)
 
-    const [err2,repo2] = await to(server.__get__('getRepo')(validUrl))
+    const [err2,repoPath2] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(2)
     expect(fakeGetPathFromGitRepoUrl.lastCall.args[0]).toBe(validUrl)
-    expect(fakeOpen.callCount).toBe(2)
-    expect(fakeOpen.lastCall.args[0]).toBe(dirName)
-    expect(fakeClone.callCount).toBe(1)
+    // expect(fakeOpen.callCount).toBe(2)
+    // expect(fakeOpen.lastCall.args[0]).toBe(dirName)
+    // expect(fakeClone.callCount).toBe(1)
     expect(err2 ).toBeNull()
-    expect(repo2.constructor ).toBe( Repository )
-    expect(repo2.path()).toBe(`${path.resolve(dirName)}/.git/`)
+    expect(repoPath2).toBe(dirName)
   }, 15000)
 
   it('should works: getRepo(validUrl) second', async () => {
-    const fakeClone = sinon.fake( server.__get__('Clone'))
-    const fakeOpen = sinon.fake( server.__get__('Repository').open)
     const fakeGetPathFromGitRepoUrl = sinon.fake.returns(dirName)
-
-    server.__set__('Clone', fakeClone)
-    server.__set__('Repository', { open: fakeOpen })
     server.__set__('getPathFromGitRepoUrl', fakeGetPathFromGitRepoUrl )
 
-    const [err,repo] = await to(server.__get__('getRepo')(validUrl))
+    const [err,repoPath] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(1)
     expect(fakeGetPathFromGitRepoUrl.lastCall.args[0]).toBe(validUrl)
-    expect(fakeOpen.callCount).toBe(1)
-    expect(fakeOpen.lastCall.args[0]).toBe(dirName)
-    expect(fakeClone.callCount).toBe(1)
-    expect(fakeClone.lastCall.args[0]).toBe(validUrl)
     expect(err ).toBeNull()
-    expect(repo.constructor ).toBe( Repository )
+    expect(repoPath).toBe(dirName)
   }, 15000)
 
   it('should works: getRepo(validUrl, emptyDirPath)', async () => {
     mktemp.createDirSync(dirName)
     const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
     expect( err ).toBeNull()
-    expect( repo.constructor ).toBe( Repository )
   }, 10000)
 
   it('should works: getRepo(validUrl, notExistDirPath)', async () => {
     const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
     expect(err ).toBeNull()
-    expect(repo.constructor ).toBe( Repository )
   }, 10000)
 
   it('should error: getRepo(validUrl, existDirPath)', async () => {
     mktemp.createDirSync(dirName)
     mktemp.createFileSync(`${dirName}/XXXXX.tmp`)
-    const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
-    expect(err.errno).toBe(NodeGitError.CODE.ENOTFOUND)
-    expect(err.errorFunction).toBe('Repository.open')
-    expect(repo).toBeUndefined()
+    const [err,repoPath] = await to(server.__get__('getRepo')(validUrl, dirName))
+    expect(err).not.toBe(null)
+    expect(err.message).toBe('NOT_EMPTY_DIRECTORY')
+    expect(err.name).toBe('Error')
+    expect(repoPath).toBeUndefined()
   })
 
   it('should error: getRepo(invalidUrl)', async () => {
-    const [err,repo] = await to(server.__get__('getRepo')(invalidUrl))
-    expect(err.errno).toBe(NodeGitError.CODE.ERROR)
-    expect(err.message).toMatch(/^curl error/)
-    expect(err.errorFunction).toBe('Clone.clone')
-    expect( repo ).toBeUndefined()
+    const [err,repoPath] = await to(server.__get__('getRepo')(invalidUrl))
+    expect(err.name).toBe('Error')
+    expect(err.message).toMatch(/^Cloning into '.*'\.\.\.\nfatal: unable to access/)
+    expect(repoPath).toBeUndefined()
   }, 10000)
 
   it('should work: readFile(absolutePath)', async () => {
-    const filePath = path.resolve( __dirname, './asset/validVideoGuideHereMarkdown.md')
+    const filePath = path.resolve( __dirname, 'asset', CONST_DIR_NAME, 'validVideoGuideHereMarkdown.md')
     const [err,filenameAndTextObj] = await to( server.__get__('readFile')(filePath))
     expect(err ).toBeNull()
     const expectedObj = {
@@ -124,22 +112,21 @@ describe("check getRepo", () => {
 
   it('should error: getVideoInfoArr(invalidUrl)', async () => {
     const [err,arr] = await to(getVideoInfoArr(invalidUrl))
-    expect(err.errno).toBe(NodeGitError.CODE.ERROR)
-    expect(err.message).toMatch(/^curl error/)
-    expect(err.errorFunction).toBe('Clone.clone')
+    expect(err.message).toMatch(/^Cloning into '.*'\.\.\.\nfatal: unable to access/)
     expect(arr).toBeUndefined()
   })
 
-  it('should work: getVideoInfoArr(invalidUrl)', async () => {
-    const [err,arr] = await to(getVideoInfoArr(invalidUrl))
-    expect(err.errno).toBe(NodeGitError.CODE.ERROR)
-    expect(err.message).toMatch(/^curl error/)
-    expect(err.errorFunction).toBe('Clone.clone')
-    expect(arr).toBeUndefined()
+  it('should work: getVideoGuideHereFileArr(validPath)', async () => {
+    const repoPath = path.resolve(__dirname, 'asset')
+    const fileArr = server.__get__('getVideoGuideHereFileArr')(repoPath)
+    expect(fileArr).toEqual([
+      path.resolve( repoPath,CONST_DIR_NAME,'validVideoGuideHereMarkdown.md'),
+      path.resolve( repoPath,CONST_DIR_NAME,'validVideoGuideHereMarkdown2.md'),
+    ])
   })
 
   it('should work: parseVideoInfo()', async () => {
-    const filePath = path.resolve( __dirname, 'asset', 'validVideoGuideHereMarkdown.md' )
+    const filePath = path.resolve( __dirname, 'asset', CONST_DIR_NAME, 'validVideoGuideHereMarkdown.md' )
     const filename = path.basename( filePath )
     const text = fs.readFileSync( filePath, 'utf8')
     const info = server.__get__('parseVideoInfo')({ filename, text})

@@ -21,7 +21,7 @@ module.exports = {
     "object-curly-spacing": 'off',
     "space-infix-ops": 'off',
     "no-unexpected-multiline": 'error',
-    "padded-blocks": 'warn',
+    "padded-blocks": 'off',
     "operator-linebreak": ['warn','before'],
 
     "standard/object-curly-even-spacing": 'off',

@@ -1,6 +1,5 @@
 import path from "path"
-import fs from "fs"
-import nodegit from 'nodegit'
+import git from 'simple-git/promise'
 import to from 'await-to-js'
 import find from 'lodash/find'
 import last from 'lodash/last'
@@ -12,17 +11,14 @@ import md5 from 'md5'
 import marked from 'marked'
 import emptyDir from "empty-dir"
 import readdirEnhanced from 'readdir-enhanced'
+import _fs from 'fs'
+import tracer from 'tracer'
 
 import { CONST_DIR_NAME } from '../constant'
 
+const fs = _fs.promises
+const logger = tracer.console()
 const { SMTV_CLONE_REPO_URL } = process.env
-const { Clone, Repository, Error: NodeGitError } = nodegit
-const fun = () => {}
-// https://github.com/nodegit/nodegit/issues/1139
-Clone.bind = fun.bind
-Clone.apply = fun.apply
-Clone.call = fun.call
-
 
 const getPathFromGitRepoUrl = (url) => {
   const projectName = last(url.split('/')).replace(/\.git$/,'')
@@ -30,21 +26,41 @@ const getPathFromGitRepoUrl = (url) => {
 }
 
 const getRepo = async (repoUrl, dirPath) => {
-  let err,repo
+  let err, err2, stat, dotGitStat
   dirPath = dirPath || getPathFromGitRepoUrl(repoUrl)
+  const dotGitPath = path.resolve(dirPath, '.git')
 
-  ;[err, repo] = await to(Repository.open(dirPath))
+  ;[err,stat] = await to(fs.stat(dirPath))
+  if (err && err.code !== 'ENOENT') throw err
 
-  const isNoSuchFile = /No such file or directory$/.test(err?.message)
-  const isEmptyDir = emptyDir.sync(path.resolve(dirPath))
-  const needClone = isNoSuchFile || isEmptyDir
+  ;[err2,dotGitStat] = await to(fs.stat(dotGitPath))
+  if (err2 && err2.code !== 'ENOENT') throw err
 
-  if (err?.errno === NodeGitError.CODE.ENOTFOUND && needClone ) {
-    ;[err, repo] = await to(Clone(repoUrl, dirPath, { bare: 0 }))
+
+  if (stat?.isDirectory() && dotGitStat?.isDirectory()) {
+    // true, true
+    const [err3] = await to(git(dirPath).pull())
+    if (err3) throw err3
+    logger.debug(`success. git pull ${dirPath}`)
+
+  } else if (stat?.isDirectory() && !dotGitStat?.isDirectory()) {
+    // true, false
+    const pathArr = readdirEnhanced.sync(dirPath)
+    if (pathArr.length > 0 ) throw new Error('NOT_EMPTY_DIRECTORY')
+
+    const [err4] = await to(git().clone(repoUrl, dirPath, { depth: 1 }))
+    if (err4) throw err4
+    logger.debug(`success. git clone ${repoUrl} ${dirPath}`)
+
+  } else {
+    // false, false
+    // false, true (이 경우는 불가능)
+    const [err4] = await to(git().clone(repoUrl, dirPath, { depth: 1 }))
+    if (err4) throw err4
+    logger.debug(`success. git clone ${repoUrl} ${dirPath}`)
   }
-  if (err ) throw err
 
-  return repo
+  return dirPath
 }
 
 const getVideoGuideHereFileArr = (repoPath) => {
@@ -57,7 +73,7 @@ const getVideoGuideHereFileArr = (repoPath) => {
 }
 
 const readFile = (absolutePath) => new Promise((resolve,reject) => {
-  fs.readFile( absolutePath, 'utf8', (err, text) => {
+  _fs.readFile( absolutePath, 'utf8', (err, text) => {
     err && reject(err)
     !err && resolve({ filename: path.basename(absolutePath), text })
   })
