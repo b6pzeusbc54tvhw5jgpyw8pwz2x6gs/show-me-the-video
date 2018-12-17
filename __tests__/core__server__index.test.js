@@ -32,30 +32,18 @@ describe("check getRepo", () => {
   beforeAll( () => rimraf.sync(dirName))
 
   it('should works: getRepo(validUrl) x 2', async () => {
-    // const fakeClone = sinon.fake( server.__get__('Clone'))
-    // const fakeOpen = sinon.fake( server.__get__('Repository').open)
     const fakeGetPathFromGitRepoUrl = sinon.fake.returns(dirName)
-
-    // server.__set__('Clone', fakeClone)
-    // server.__set__('Repository', { open: fakeOpen })
     server.__set__('getPathFromGitRepoUrl', fakeGetPathFromGitRepoUrl )
 
     const [err,repoPath] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(1)
     expect(fakeGetPathFromGitRepoUrl.getCall(0).args[0]).toBe(validUrl)
-    // expect(fakeOpen.callCount).toBe(1)
-    // expect(fakeOpen.getCall(0).args[0]).toBe(dirName)
-    // expect(fakeClone.callCount).toBe(1)
-    // expect(fakeClone.getCall(0).args[0]).toBe(validUrl)
     expect(err ).toBeNull()
     expect(repoPath).toBe(dirName)
 
     const [err2,repoPath2] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(2)
     expect(fakeGetPathFromGitRepoUrl.lastCall.args[0]).toBe(validUrl)
-    // expect(fakeOpen.callCount).toBe(2)
-    // expect(fakeOpen.lastCall.args[0]).toBe(dirName)
-    // expect(fakeClone.callCount).toBe(1)
     expect(err2 ).toBeNull()
     expect(repoPath2).toBe(dirName)
   }, 15000)

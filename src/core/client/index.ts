@@ -6,25 +6,30 @@ export const getVideoInfoArr = async () => {
   let err, res
 
   ;[err,res] = await to( axios.get('/api/v1/list'))
-  if( err) throw err
+  if (err) throw err
 
   return res.data
 }
 
 export const getGuideInfo = async (id) => {
-  let err, res
-
   const videoInfoArr = await getVideoInfoArr()
   const videoInfo = find(videoInfoArr, { id })
-  if( videoInfo) return videoInfo
+  if (videoInfo) return videoInfo
 
-  ;[err,res] = await to( axios.get('/api/v1/guide/' + id))
-  if( err) throw err
+  const [err,res] = await to( axios.get('/api/v1/guide/' + id))
+  if (err) throw err
 
+  return res.data
+}
+
+export const getClientConfig = async () => {
+  const [err,res] = await to( axios.get('/api/v1/clientConfig'))
+  if (err) throw err
   return res.data
 }
 
 export default {
   getVideoInfoArr,
   getGuideInfo,
+  getClientConfig,
 }
