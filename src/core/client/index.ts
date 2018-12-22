@@ -3,12 +3,10 @@ import axios from 'axios'
 import find from 'lodash/find'
 
 export const getVideoInfoArr = async () => {
-  let err, res
-
-  ;[err,res] = await to( axios.get('/api/v1/list'))
+  const [err, res] = await to( axios.get('/api/v1/list'))
   if (err) throw err
 
-  return res.data
+  return res!.data
 }
 
 export const getGuideInfo = async (id) => {
@@ -29,7 +27,7 @@ export const getClientConfig = async () => {
 }
 
 export default {
-  getVideoInfoArr,
-  getGuideInfo,
   getClientConfig,
+  getGuideInfo,
+  getVideoInfoArr,
 }
