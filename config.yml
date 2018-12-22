@@ -1,0 +1,14 @@
+
+---
+
+showLayout: false
+siteUrl: http://video-guide.devp.io
+domain: video-guide.devp.io
+repoInfoArr:
+  - cloneUrl: https://gitlab+deploy-token-30766:saNiqRxmUY9mEsvKZ2LM@gitlab.com/b6pzeusbc54tvhw5jgpyw8pwz2x6gs/video-guide-here-test.git
+    publicUrl: https://gitlab.com/b6pzeusbc54tvhw5jgpyw8pwz2x6gs/video-guide-here-test
+    title: "Infinity-xxx 비디오 가이드"
+    hostingType: GITLAB
+    managerId: bh23.yoo
+
+

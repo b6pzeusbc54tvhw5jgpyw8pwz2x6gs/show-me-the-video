@@ -9,14 +9,14 @@ import compact from 'lodash/compact'
 import findIndex from 'lodash/findIndex'
 import md5 from 'md5'
 import marked from 'marked'
-import emptyDir from "empty-dir"
 import readdirEnhanced from 'readdir-enhanced'
-import _fs from 'fs'
+import fs from 'fs'
+import yaml from 'js-yaml'
 import tracer from 'tracer'
 
 import { CONST_DIR_NAME } from '../constant'
 
-const fs = _fs.promises
+const fsPromise = fs.promises
 const logger = tracer.console()
 const { SMTV_CLONE_REPO_URL } = process.env
 
@@ -30,10 +30,10 @@ const getRepo = async (repoUrl, dirPath) => {
   dirPath = dirPath || getPathFromGitRepoUrl(repoUrl)
   const dotGitPath = path.resolve(dirPath, '.git')
 
-  ;[err,stat] = await to(fs.stat(dirPath))
+  ;[err,stat] = await to(fsPromise.stat(dirPath))
   if (err && err.code !== 'ENOENT') throw err
 
-  ;[err2,dotGitStat] = await to(fs.stat(dotGitPath))
+  ;[err2,dotGitStat] = await to(fsPromise.stat(dotGitPath))
   if (err2 && err2.code !== 'ENOENT') throw err
 
 
@@ -73,7 +73,7 @@ const getVideoGuideHereFileArr = (repoPath) => {
 }
 
 const readFile = (absolutePath) => new Promise((resolve,reject) => {
-  _fs.readFile( absolutePath, 'utf8', (err, text) => {
+  fs.readFile( absolutePath, 'utf8', (err, text) => {
     err && reject(err)
     !err && resolve({ filename: path.basename(absolutePath), text })
   })
@@ -128,7 +128,23 @@ export const getGuideInfo = async (id, url) => {
   return find(guideInfoArr, { id })
 }
 
+const config = yaml.safeLoad(fs.readFileSync('config.yml', 'utf8'))
+export const getClientConfig = async (id, url) => {
+  return {
+    showLayout: config.showLayout === 'true',
+    siteUrl: config.siteUrl,
+    domain: config.domain,
+    repoInfoArr: config.repoInfoArr.map( r => ({
+      hostingType: r.hostingType,
+      publicUrl: r.publicUrl,
+      title: r.title,
+      managerId: r.managerId,
+    })),
+  }
+}
+
 export default {
   getVideoInfoArr,
   getGuideInfo,
+  getClientConfig,
 }
