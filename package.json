@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@zeit/next-css": "^1.0.1",
+    "@zeit/next-typescript": "^1.1.1",
     "await-to-js": "^2.0.1",
     "axios": "^0.18.0",
     "babel-plugin-transform-define": "^1.3.0",
@@ -40,6 +41,8 @@
     "simple-git": "^1.107.0",
     "styled-components": "^4.1.1",
     "tracer": "^0.9.6",
+    "tslint": "^5.12.0",
+    "typescript": "^3.2.2",
     "video-react": "^0.13.1"
   },
   "devDependencies": {
@@ -47,6 +50,7 @@
     "@babel/core": "^7.1.6",
     "@babel/node": "^7.0.0",
     "@babel/plugin-proposal-optional-chaining": "^7.0.0",
+    "@types/node": "^10.12.18",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^23.6.0",

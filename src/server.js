@@ -1,3 +1,4 @@
+require('@babel/register')
 const { parse } = require('url')   // eslint-disable-line
 const path = require('path')
 const express = require('express')

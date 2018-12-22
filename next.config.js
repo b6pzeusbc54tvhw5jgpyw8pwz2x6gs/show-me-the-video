@@ -1,8 +1,8 @@
-
 const withCSS = require('@zeit/next-css')
 const webpack = require('webpack')
+const withTypescript = require('@zeit/next-typescript')
 
-module.exports = withCSS({
+let customConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) return config
 
@@ -19,5 +19,9 @@ module.exports = withCSS({
     SMTV_SHOW_LAYOUT: process.env.SMTV_SHOW_LAYOUT === 'true',
     SMTV_REPO_TYPE: process.env.SMTV_REPO_TYPE,
   },
-})
+}
+
+customConfig = withCSS( customConfig )
+customConfig = withTypescript( customConfig )
+module.exports = customConfig
 
