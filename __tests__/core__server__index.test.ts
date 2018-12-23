@@ -2,20 +2,23 @@
 
 import fs from "fs"
 import path from 'path'
-import sinon from 'sinon'
-import to from 'await-to-js'
 
+import to from 'await-to-js'
 import mktemp from 'mktemp'
 import rimraf from 'rimraf'
-import { CONST_DIR_NAME } from '../src/core/constant'
+import sinon from 'sinon'
 
-import server, { getVideoInfoArr } from '../src/core/server'
+import { CONST_DIR_NAME } from '../src/core/constant'
+import * as server from '../src/core/server'
+import getVideoInfoArr from '../src/core/server'
 
 test('two plus two is four', () => {
   expect(2 + 2).toBe(4)
 })
 
+
 describe("check getPathFromGitRepoUrl", () => {
+  const a = server.getGuideInfo()
   const validUrl = 'https://github.com/b6pzeusbc54tvhw5jgpyw8pwz2x6gs/video-here-tc-data.git'
 
   it('should works: getPathFromGitRepoUrl(url)', () => {

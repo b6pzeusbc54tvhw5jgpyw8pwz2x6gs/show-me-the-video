@@ -6,7 +6,7 @@
 		// Search under node_modules for non-relative imports.
 		"moduleResolution": "node",
 		// Process & infer types from .js files.
-		"allowJs": false,
+		"allowJs": true,
 		// Don't emit; allow Babel to transform files.
 		"noEmit": true,
 		"pretty": true,
@@ -16,8 +16,8 @@
 		// Disallow features that require cross-file information for emit.
 		"isolatedModules": true,
 		// Import non-ES modules as default imports.
-    "esModuleInterop": true,
-    "checkJs": false,
+		"esModuleInterop": true,
+
     "sourceMap": true,
     "outDir": "build-ts",
     "allowSyntheticDefaultImports": true,
@@ -28,6 +28,6 @@
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "removeComments": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   }
 }

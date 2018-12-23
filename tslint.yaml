@@ -20,9 +20,8 @@ rules:
   quotemark: [false, single, avoid-escape, avoid-template]
   curly: [true, ignore-same-line]
   whitespace: [true, "check-branch", "check-operator", "check-typecast"]
-  semicolon:
-    - true
-    - never
+  semicolon: [true, never]
+  ordered-imports: [false]
 
 jsRules:
   max-line-length:

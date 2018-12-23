@@ -77,13 +77,13 @@ const lookupMime = src => mime.lookup(src) ? mime.lookup(src) : void 0
 
 const renderers = {
   linkReference: (props) => {
-    const videoUrl = props?.href
-    const thumbnailUrl = props.children[0]?.props?.src
+    const videoUrl = props!.href
+    const thumbnailUrl = props.children[0]!.props!.src
     // videoUrl, thumbnailUrl 이 아래의 패턴의 경우
     // 비디오 플레이어 자리. 플레이어는 따로 띄우고 있으므로 제거해줌
     if (
-      lookupMime(videoUrl)?.split('/')[0] === 'video'
-      && lookupMime(thumbnailUrl)?.split('/')[0] === 'image'
+      lookupMime(videoUrl)!.split('/')[0] === 'video'
+      && lookupMime(thumbnailUrl)!.split('/')[0] === 'image'
     ) {
       return null
     }
@@ -111,6 +111,8 @@ const Guide = props => {
 
 /assign @${SMTV_MANAGER_ID}
 `.trim())
+  const issue = `${SMTV_PUBLIC_REPO_URL}/issues/new?issue[title]=${issueTitle}&issue[description]=${issueDescription}`
+  
   return (
     <Page>
       <Header />
@@ -135,10 +137,18 @@ const Guide = props => {
           </MarkdownStyle>
           <RebassFlex>
             <BigButton width={[ 1, 1, 1/2 ]} mx={1} bg="magenta">
-              <a target='_blank' href={`${SMTV_PUBLIC_REPO_URL}/issues/new?issue[title]=${issueTitle}&issue[description]=${issueDescription}`}>질문/제안</a>
+              <a
+                target='_blank'
+                href={issue}
+              >
+                질문/제안
+              </a>
             </BigButton>
             <BigButton width={[ 1, 1, 1/2 ]} mx={1} bg="magenta">
-              <a target='_blank' href={`${SMTV_PUBLIC_REPO_URL}/edit/master/${CONST_DIR_NAME}/${filename}`}>
+              <a
+                target='_blank'
+                href={`${SMTV_PUBLIC_REPO_URL}/edit/master/${CONST_DIR_NAME}/${filename}`}
+              >
                 편집
               </a>
             </BigButton>
@@ -151,7 +161,7 @@ const Guide = props => {
 }
 
 Guide.getInitialProps = async ({ req, res }) => {
-  const guideId = req ? req.params?.guideId : '11'
+  const guideId = req ? req.params!.guideId : '11'
   const guideInfo = await getGuideInfo(guideId)
   return { guideInfo }
 }
