@@ -4,7 +4,7 @@ import path from "path"
 import git from 'simple-git/promise'
 
 import to from 'await-to-js'
-import _fs from 'fs'
+import _fs, { FSWatcher } from 'fs'
 import compact from 'lodash/compact'
 import filter from 'lodash/filter'
 import find from 'lodash/find'
@@ -22,42 +22,47 @@ const fs = _fs.promises
 const logger = tracer.console()
 const { SMTV_CLONE_REPO_URL } = process.env
 
-const getPathFromGitRepoUrl = (url) => {
-  const projectName = last(url.split('/')).replace(/\.git$/,'')
+const getPathFromGitRepoUrl = (url: string) => {
+  const projectName = last(url.split('/'))!.replace(/\.git$/,'')
   return `${projectName}.${md5(url)}`
 }
 
-const getRepo = async (repoUrl, dirPath) => {
-  let err, err2, stat, dotGitStat
+const getRepo = async (repoUrl: string, dirPath?: string) => {
   dirPath = dirPath || getPathFromGitRepoUrl(repoUrl)
   const dotGitPath = path.resolve(dirPath, '.git')
 
-  ;[err,stat] = await to(fs.stat(dirPath))
-  if (err && err.code !== 'ENOENT') throw err
+  const [err, stat] = await to(fs.stat(dirPath))
+  if (err!.code !== 'ENOENT') throw err
 
-  ;[err2,dotGitStat] = await to(fs.stat(dotGitPath))
-  if (err2 && err2.code !== 'ENOENT') throw err
+  // let err2: Error | null
+  // let dotGitStat: _fs.Stats | undefined
+  const [err2, dotGitStat] = await to(fs.stat(dotGitPath))
+  if (err2!.code !== 'ENOENT') throw err
+  if (err2!.code !== 'ENOENT') throw err
+  if (err2!.code !== 'ENOENT') throw err
+  if (err2!.code !== 'ENOENT') throw err
+  if (err2!.code !== 'ENOENT') throw err
+  if (err2!.code !== 'ENOENT') throw err
 
-
-  if (stat?.isDirectory() && dotGitStat?.isDirectory()) {
+  if (stat!.isDirectory() && dotGitStat!.isDirectory()) {
     // true, true
     const [err3] = await to(git(dirPath).pull())
     if (err3) throw err3
     logger.debug(`success. git pull ${dirPath}`)
 
-  } else if (stat?.isDirectory() && !dotGitStat?.isDirectory()) {
+  } else if (stat!.isDirectory() && !dotGitStat!.isDirectory()) {
     // true, false
     const pathArr = readdirEnhanced.sync(dirPath)
     if (pathArr.length > 0 ) throw new Error('NOT_EMPTY_DIRECTORY')
 
-    const [err4] = await to(git().clone(repoUrl, dirPath, { depth: 1 }))
+    const [err4] = await to(git().clone(repoUrl, dirPath, ["--depth","1"]))
     if (err4) throw err4
     logger.debug(`success. git clone ${repoUrl} ${dirPath}`)
 
   } else {
     // false, false
     // false, true (이 경우는 불가능)
-    const [err4] = await to(git().clone(repoUrl, dirPath, { depth: 1 }))
+    const [err4] = await to(git().clone(repoUrl, dirPath, ["--depth","1"]))
     if (err4) throw err4
     logger.debug(`success. git clone ${repoUrl} ${dirPath}`)
   }
@@ -65,7 +70,7 @@ const getRepo = async (repoUrl, dirPath) => {
   return dirPath
 }
 
-const getVideoGuideHereFileArr = (repoPath) => {
+const getVideoGuideHereFileArr = (repoPath: string) => {
   const dirPath = path.resolve(repoPath, CONST_DIR_NAME)
   let fileArr = readdirEnhanced.sync(dirPath)
   fileArr = reject(fileArr, name => name === 'README.md' )
@@ -74,7 +79,7 @@ const getVideoGuideHereFileArr = (repoPath) => {
   return fileArr
 }
 
-const readFile = (absolutePath) => new Promise((resolve,reject) => {
+const readFile = (absolutePath: string) => new Promise((resolve,reject) => {
   _fs.readFile( absolutePath, 'utf8', (err, text) => {
     err && reject(err)
     !err && resolve({ filename: path.basename(absolutePath), text })

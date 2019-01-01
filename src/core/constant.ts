@@ -1,0 +1,1 @@
+export const CONST_DIR_NAME: string = 'show-me-the-video'
