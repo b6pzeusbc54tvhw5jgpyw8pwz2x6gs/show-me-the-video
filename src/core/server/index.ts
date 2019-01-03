@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import path from "path"
 import git from 'simple-git/promise'
 
@@ -15,12 +13,24 @@ import marked from 'marked'
 import md5 from 'md5'
 import readdirEnhanced from 'readdir-enhanced'
 import tracer from 'tracer'
-
 import { CONST_DIR_NAME } from '../constant'
+import { oc } from 'ts-optchain'
+
+function c<T>(exp: () => T) {
+  try {
+      let val = exp();
+      if (val != null) {
+          return val;
+      }
+  } catch { 
+
+  }
+  return void 0
+}
 
 const fs = _fs.promises
 const logger = tracer.console()
-const { SMTV_CLONE_REPO_URL } = process.env
+const { SMTV_CLONE_REPO_URL='' } = process.env
 
 const getPathFromGitRepoUrl = (url: string) => {
   const projectName = last(url.split('/'))!.replace(/\.git$/,'')
@@ -32,25 +42,20 @@ const getRepo = async (repoUrl: string, dirPath?: string) => {
   const dotGitPath = path.resolve(dirPath, '.git')
 
   const [err, stat] = await to(fs.stat(dirPath))
-  if (err!.code !== 'ENOENT') throw err
+  if (err && err.code !== 'ENOENT') throw err
 
   // let err2: Error | null
   // let dotGitStat: _fs.Stats | undefined
   const [err2, dotGitStat] = await to(fs.stat(dotGitPath))
-  if (err2!.code !== 'ENOENT') throw err
-  if (err2!.code !== 'ENOENT') throw err
-  if (err2!.code !== 'ENOENT') throw err
-  if (err2!.code !== 'ENOENT') throw err
-  if (err2!.code !== 'ENOENT') throw err
-  if (err2!.code !== 'ENOENT') throw err
+  if (err2 && err2.code !== 'ENOENT') throw err
 
-  if (stat!.isDirectory() && dotGitStat!.isDirectory()) {
+  if (oc(stat).isDirectory() && oc(dotGitStat).isDirectory()) {
     // true, true
     const [err3] = await to(git(dirPath).pull())
     if (err3) throw err3
     logger.debug(`success. git pull ${dirPath}`)
 
-  } else if (stat!.isDirectory() && !dotGitStat!.isDirectory()) {
+  } else if (oc(stat).isDirectory() && !oc(dotGitStat).isDirectory()) {
     // true, false
     const pathArr = readdirEnhanced.sync(dirPath)
     if (pathArr.length > 0 ) throw new Error('NOT_EMPTY_DIRECTORY')
@@ -79,43 +84,49 @@ const getVideoGuideHereFileArr = (repoPath: string) => {
   return fileArr
 }
 
-const readFile = (absolutePath: string) => new Promise((resolve,reject) => {
+const readFile = (absolutePath: string):Promise<FilenameText> => new Promise((resolve,reject) => {
   _fs.readFile( absolutePath, 'utf8', (err, text) => {
     err && reject(err)
-    !err && resolve({ filename: path.basename(absolutePath), text })
+
+    const ft: FilenameText = { filename: path.basename(absolutePath), text }
+    !err && resolve(ft)
   })
 })
+interface FilenameText {
+  filename: string
+  text: string
+}
 
-const parseVideoInfo = ({ filename, text }) => {
+const parseVideoInfo = ({ filename, text }: FilenameText ) => {
   // todotodotodotodo!!!
   const tokenArr = marked.lexer(text)
-  const firstHeading = find(tokenArr, t => t.type === 'heading' && t.depth === 1)
+  const firstHeading: any = find(tokenArr, t => t.type === 'heading' && t.depth === 1) || {}
   const titleIndex = findIndex( tokenArr, firstHeading )
-  let subTitle = tokenArr[titleIndex+1]
-  subTitle = subTitle?.type === 'heading' && subTitle.depth === 2
+  let subTitle: any = tokenArr[titleIndex+1]
+  subTitle = subTitle!.type === 'heading' && subTitle.depth === 2
     ? subTitle.text : ''
 
-  const isDraft = tokenArr.links?.draft?.href === 'true'
+  const isDraft = c(() => tokenArr.links.draft.href) === 'true'
   if (isDraft) return null
 
   return {
-    title: firstHeading?.text || '[제목없음]',
+    title: firstHeading!.text || '[제목없음]',
     subTitle: subTitle,
-    videoUrl: tokenArr.links.videourl?.href,
-    thumbnailUrl: tokenArr.links.thumbnailurl?.href,
-    tagArr: tokenArr.links.tags?.href?.split(',') || [],
-    prevGuideId: tokenArr.links?.prev?.href,
-    nextGuideId: tokenArr.links?.next?.href,
-    author: tokenArr.links?.author?.href,
-    date: tokenArr.links?.date?.href,
-    duration: tokenArr.links?.duration?.href,
+    videoUrl: tokenArr.links.videourl!.href,
+    thumbnailUrl: tokenArr.links.thumbnailurl!.href,
+    tagArr: tokenArr.links.tags!.href!.split(',') || [],
+    prevGuideId: tokenArr.links!.prev!.href,
+    nextGuideId: tokenArr.links!.next!.href,
+    author: tokenArr.links!.author!.href,
+    date: tokenArr.links!.date!.href,
+    duration: tokenArr.links!.duration!.href,
     id: md5(filename).substr(0,8),
     filename: filename,
     text: text,
   }
 }
 
-export const getVideoInfoArr = async (url) => {
+export const getVideoInfoArr = async (url: string) => {
   url = url || SMTV_CLONE_REPO_URL
   const repoPath = getPathFromGitRepoUrl(url)
   const [err] = await to( getRepo(url,repoPath))
@@ -129,7 +140,7 @@ export const getVideoInfoArr = async (url) => {
   return videoInfoArr
 }
 
-export const getGuideInfo = async (id, url) => {
+export const getGuideInfo = async (id: string, url: string) => {
   url = url || SMTV_CLONE_REPO_URL
   const guideInfoArr = await getVideoInfoArr(url)
   return find(guideInfoArr, { id })
@@ -139,3 +150,4 @@ export default {
   getGuideInfo,
   getVideoInfoArr,
 }
+

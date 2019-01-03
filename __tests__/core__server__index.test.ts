@@ -9,20 +9,32 @@ import rimraf from 'rimraf'
 import sinon from 'sinon'
 
 import { CONST_DIR_NAME } from '../src/core/constant'
-import * as server from '../src/core/server'
-import getVideoInfoArr from '../src/core/server'
+import originalServer from '../src/core/server'
+
+interface RewiredServer {
+  __get__: Function
+  __set__: Function
+  getGuideInfo: Function
+  getVideoInfoArr: Function
+}
+
+const server: RewiredServer = {
+  // @ts-ignore
+  __get__: originalServer.__get__,
+  // @ts-ignore
+  __set__: originalServer.__set__,
+  ...originalServer,
+}
 
 test('two plus two is four', () => {
   expect(2 + 2).toBe(4)
 })
 
-
 describe("check getPathFromGitRepoUrl", () => {
-  const a = server.getGuideInfo()
   const validUrl = 'https://github.com/b6pzeusbc54tvhw5jgpyw8pwz2x6gs/video-here-tc-data.git'
 
   it('should works: getPathFromGitRepoUrl(url)', () => {
-    const dirName = server.__get__('getPathFromGitRepoUrl')(validUrl)
+    const dirName = server.__get__!('getPathFromGitRepoUrl')(validUrl)
     expect(dirName).toMatch(/^video-here-tc-data.\w{32}$/)
   })
 })
@@ -37,6 +49,7 @@ describe("check getRepo", () => {
   it('should works: getRepo(validUrl) x 2', async () => {
     // const fakeClone = sinon.fake( server.__get__('Clone'))
     // const fakeOpen = sinon.fake( server.__get__('Repository').open)
+
     const fakeGetPathFromGitRepoUrl = sinon.fake.returns(dirName)
 
     // server.__set__('Clone', fakeClone)
@@ -65,8 +78,8 @@ describe("check getRepo", () => {
 
   it('should works: getRepo(validUrl) second', async () => {
     const fakeGetPathFromGitRepoUrl = sinon.fake.returns(dirName)
+    if( !server.__set__ || !server.__get__) return
     server.__set__('getPathFromGitRepoUrl', fakeGetPathFromGitRepoUrl )
-
     const [err,repoPath] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(1)
     expect(fakeGetPathFromGitRepoUrl.lastCall.args[0]).toBe(validUrl)
@@ -114,7 +127,7 @@ describe("check getRepo", () => {
   })
 
   it('should error: getVideoInfoArr(invalidUrl)', async () => {
-    const [err,arr] = await to(getVideoInfoArr(invalidUrl))
+    const [err,arr] = await to(server.getVideoInfoArr(invalidUrl))
     expect(err.message).toMatch(/^Cloning into '.*'\.\.\.\nfatal: unable to access/)
     expect(arr).toBeUndefined()
   })
@@ -152,3 +165,5 @@ describe("check getRepo", () => {
     rimraf.sync(dirName)
   })
 })
+
+declare const __rewire_reset_all__: Function
