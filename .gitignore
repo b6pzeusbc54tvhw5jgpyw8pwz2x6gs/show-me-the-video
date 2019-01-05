@@ -88,4 +88,5 @@ videoExample/
 nodegit/
 src/out
 /video-guide-here-test.*
-.envrc
+/.envrc
+/build/
