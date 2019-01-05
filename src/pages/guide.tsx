@@ -90,8 +90,7 @@ const renderers = {
   },
 }
 
-
-const Guide = props => {
+const Guide: IStatelessPage = props => {
   const { router } = props
   const { id, title, videoUrl, text, thumbnailUrl, filename } = props.guideInfo
   const { showLayout } = useContext(appContext)
@@ -160,7 +159,10 @@ const Guide = props => {
   )
 }
 
-Guide.getInitialProps = async ({ req, res }) => {
+
+
+
+Guide.getInitialProps = async ({ req }) => {
   const guideId = req ? req.params!.guideId : '11'
   const guideInfo = await getGuideInfo(guideId)
   return { guideInfo }

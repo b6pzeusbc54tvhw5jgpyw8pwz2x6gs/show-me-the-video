@@ -80,7 +80,7 @@ describe("check getRepo", () => {
 
   it('should works: getRepo(validUrl) second', async () => {
     const fakeGetPathFromGitRepoUrl = sinon.fake.returns(dirName)
-    if( !server.__set__ || !server.__get__) return
+    if (!server.__set__ || !server.__get__) return
     server.__set__('getPathFromGitRepoUrl', fakeGetPathFromGitRepoUrl )
     const [err,repoPath] = await to(server.__get__('getRepo')(validUrl))
     expect(fakeGetPathFromGitRepoUrl.callCount).toBe(1)
@@ -92,12 +92,14 @@ describe("check getRepo", () => {
   it('should works: getRepo(validUrl, emptyDirPath)', async () => {
     mktemp.createDirSync(dirName)
     const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
-    expect( err ).toBeNull()
+    expect(err).toBeNull()
+    expect(repo).toBeUndefined()
   }, 10000)
 
   it('should works: getRepo(validUrl, notExistDirPath)', async () => {
     const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
-    expect(err ).toBeNull()
+    expect(err).toBeNull()
+    expect(repo).toBeUndefined()
   }, 10000)
 
   it('should error: getRepo(validUrl, existDirPath)', async () => {

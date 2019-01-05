@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import { Flex as RebassFlex } from 'rebass'
 import NextLink from 'next/link'
-import omit from 'lodash/omit'
 
 const StyledLink = styled.div`
   cursor: pointer;
@@ -16,7 +15,7 @@ export const Page = styled(RebassFlex)`
   flex-direction: column;
 `
 
-export const Link = (props) => {
+export const Link = (props: any) => {
   return (
     <StyledLink>
       <NextLink {...props}/>

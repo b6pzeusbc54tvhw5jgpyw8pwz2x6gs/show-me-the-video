@@ -1,15 +1,21 @@
-import { withRouter } from 'next/router'
-import React, { useContext } from 'react'
+import { withRouter, SingletonRouter } from 'next/router'
+import React, { useContext, SFC } from 'react'
 import getConfig from 'next/config'
-import { GoHome } from 'react-icons/go'
 import styled from 'styled-components'
-import { Box as RebassBox, Image as RebassImage, Link as RebassLink, Flex as RebassFlex } from 'rebass'
+import { Flex as RebassFlex } from 'rebass'
 import { Link } from './styled'
 import { appContext } from '../context'
 
-const {serverRuntimeConfig, publicRuntimeConfig} = getConfig()
+const { publicRuntimeConfig} = getConfig()
 
-const Box = styled(RebassFlex)`
+interface IStyled extends SFC {
+  showLayout?: boolean
+}
+interface ITextButtonProps extends IStyled {
+  onClick?: () => void
+}
+
+const Box = styled(RebassFlex)<IStyled>`
   -webkit-box-align: center;
   align-items: center;
   height: 80px;
@@ -22,7 +28,7 @@ const Box = styled(RebassFlex)`
   background-color: ${p => p.showLayout ? 'rgba(133, 233, 133, 0.65)' : '#f2aaaa'};
 `
 
-const TextButton = styled.li`
+const TextButton = styled.li<ITextButtonProps>`
   background-color: ${p => p.showLayout ? 'rgba(83, 23, 233, 0.65)' : '#f2aaaa'};
   display: inline-block;
   cursor: pointer;
@@ -44,11 +50,12 @@ const TextButton = styled.li`
   }
 `
 
+
 const TextButtonBox = styled.ul`
   list-style: none;
 `
 
-const H1 = styled.h1`
+const H1 = styled.h1<IStyled>`
   font-size: 1.3em;
   color: black;
   background-color: ${p => p.showLayout ? 'rgba(83, 23, 233, 0.65)' : '#f2aaaa'};
@@ -57,8 +64,11 @@ const H1 = styled.h1`
     color: black;
   }
 `
+interface HeaderProps {
+  router: SingletonRouter
+}
 
-const Header = props => {
+const Header: IStatelessPage<HeaderProps> = (props: HeaderProps) => {
   const { showLayout, toggleShowLayout } = useContext(appContext)
   const { pathname } = props.router
   const { SMTV_TITLE } = publicRuntimeConfig

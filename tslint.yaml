@@ -1,5 +1,6 @@
 ---
-extends: "tslint:recommended"
+extends: []
+defaultSeverity: "warning"
 rules:
   max-line-length:
     options: [120]

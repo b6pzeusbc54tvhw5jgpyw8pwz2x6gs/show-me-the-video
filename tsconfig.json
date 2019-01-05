@@ -1,26 +1,19 @@
 {
   "compilerOptions": {
 
-    // Target latest version of ECMAScript.
 		"target": "esnext",
-		// Search under node_modules for non-relative imports.
 		"moduleResolution": "node",
-		// Process & infer types from .js files.
 		"allowJs": false,
-		// Don't emit; allow Babel to transform files.
 		"noEmit": true,
 		"pretty": true,
 
-		// Enable strictest settings like strictNullChecks & noImplicitAny.
 		"strict": true,
-		// Disallow features that require cross-file information for emit.
 		"isolatedModules": true,
-		// Import non-ES modules as default imports.
-    "esModuleInterop": true,
     "checkJs": false,
     "sourceMap": true,
     "outDir": "build-ts",
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "jsx": "preserve",
     "lib": ["dom", "es2017"],
     "module": "esnext",
@@ -28,6 +21,12 @@
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "removeComments": false,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "typeRoots": [
+      "./node_modules/@types/"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

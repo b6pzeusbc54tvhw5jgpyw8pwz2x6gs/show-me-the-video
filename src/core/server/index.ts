@@ -50,7 +50,7 @@ const getRepo = async (repoUrl: string, dirPath?: string) => {
   const [err2, dotGitStat] = await to(fs.stat(dotGitPath))
   if (err2 && err2.code !== 'ENOENT') throw err
 
-  if (oc(stat).isDirectory() && oc(dotGitStat).isDirectory()) {
+  if (oc(stat)!.isDirectory() && oc(dotGitStat).isDirectory()) {
     // true, true
     const [err3] = await to(git(dirPath).pull())
     if (err3) throw err3
@@ -70,6 +70,7 @@ const getRepo = async (repoUrl: string, dirPath?: string) => {
     // false, true (이 경우는 불가능)
     const [err4] = await to(git().clone(repoUrl, dirPath, ["--depth","1"]))
     if (err4) throw err4
+
     logger.debug(`success. git clone ${repoUrl} ${dirPath}`)
   }
 
