@@ -11,14 +11,16 @@ import sinon from 'sinon'
 import { CONST_DIR_NAME } from '../src/core/constant'
 import originalServer from '../src/core/server'
 
-interface RewiredServer {
-  __get__: Function
-  __set__: Function
+interface IRewiredServer {
+  __get__: (name: string) => any
+  __set__: (name: string, fakeThing: any) => void
   getGuideInfo: Function
   getVideoInfoArr: Function
 }
 
-const server: RewiredServer = {
+declare const __rewire_reset_all__: () => void
+
+const server: IRewiredServer = {
   // @ts-ignore
   __get__: originalServer.__get__,
   // @ts-ignore
@@ -166,4 +168,3 @@ describe("check getRepo", () => {
   })
 })
 
-declare const __rewire_reset_all__: Function

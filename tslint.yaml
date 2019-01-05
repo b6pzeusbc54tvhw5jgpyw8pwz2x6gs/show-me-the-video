@@ -19,9 +19,13 @@ rules:
       - trace
   quotemark: [false, single, avoid-escape, avoid-template]
   curly: [true, ignore-same-line]
-  whitespace: [true, "check-branch", "check-operator", "check-typecast"]
+  whitespace: [true, "check-branch","check-typecast"]
   semicolon: [true, never]
   ordered-imports: [false]
+  arrow-parens: [false]
+  no-unused-expression: [true, "allow-fast-null-checks"]
+  object-literal-shorthand: [false]
+  object-literal-sort-keys: [false]
 
 jsRules:
   max-line-length:

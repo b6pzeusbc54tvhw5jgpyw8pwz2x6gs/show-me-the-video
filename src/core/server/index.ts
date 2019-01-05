@@ -2,13 +2,13 @@ import path from "path"
 import git from 'simple-git/promise'
 
 import to from 'await-to-js'
-import _fs, { FSWatcher } from 'fs'
+import _fs from 'fs'
 import compact from 'lodash/compact'
 import filter from 'lodash/filter'
+import lodashReject from 'lodash/reject'
 import find from 'lodash/find'
 import findIndex from 'lodash/findIndex'
 import last from 'lodash/last'
-import reject from 'lodash/reject'
 import marked from 'marked'
 import md5 from 'md5'
 import readdirEnhanced from 'readdir-enhanced'
@@ -18,13 +18,14 @@ import { oc } from 'ts-optchain'
 
 function c<T>(exp: () => T) {
   try {
-      let val = exp();
+      const val = exp()
       if (val != null) {
-          return val;
+          return val
       }
-  } catch { 
-
+  } catch (err) {
+    logger.debug(err)
   }
+
   return void 0
 }
 
@@ -78,26 +79,26 @@ const getRepo = async (repoUrl: string, dirPath?: string) => {
 const getVideoGuideHereFileArr = (repoPath: string) => {
   const dirPath = path.resolve(repoPath, CONST_DIR_NAME)
   let fileArr = readdirEnhanced.sync(dirPath)
-  fileArr = reject(fileArr, name => name === 'README.md' )
+  fileArr = lodashReject(fileArr, name => name === 'README.md')
   fileArr = filter(fileArr, name => /\.md$/.test(name))
   fileArr = fileArr.map( name => path.resolve( dirPath, name))
   return fileArr
 }
 
-const readFile = (absolutePath: string):Promise<FilenameText> => new Promise((resolve,reject) => {
+const readFile = (absolutePath: string): Promise<IFilenameText> => new Promise((resolve,reject) => {
   _fs.readFile( absolutePath, 'utf8', (err, text) => {
     err && reject(err)
 
-    const ft: FilenameText = { filename: path.basename(absolutePath), text }
+    const ft: IFilenameText = { filename: path.basename(absolutePath), text }
     !err && resolve(ft)
   })
 })
-interface FilenameText {
+interface IFilenameText {
   filename: string
   text: string
 }
 
-const parseVideoInfo = ({ filename, text }: FilenameText ) => {
+const parseVideoInfo = ({ filename, text }: IFilenameText ) => {
   // todotodotodotodo!!!
   const tokenArr = marked.lexer(text)
   const firstHeading: any = find(tokenArr, t => t.type === 'heading' && t.depth === 1) || {}
