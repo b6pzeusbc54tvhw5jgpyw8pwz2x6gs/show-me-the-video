@@ -93,13 +93,13 @@ describe("check getRepo", () => {
     mktemp.createDirSync(dirName)
     const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
     expect(err).toBeNull()
-    expect(repo).toBeUndefined()
+    expect(repo).not.toBeUndefined()
   }, 10000)
 
   it('should works: getRepo(validUrl, notExistDirPath)', async () => {
     const [err,repo] = await to(server.__get__('getRepo')(validUrl, dirName))
     expect(err).toBeNull()
-    expect(repo).toBeUndefined()
+    expect(repo).not.toBeUndefined()
   }, 10000)
 
   it('should error: getRepo(validUrl, existDirPath)', async () => {

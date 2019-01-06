@@ -1,10 +1,13 @@
-import React, { useContext } from 'react'
+import React, { useContext, SFC } from 'react'
 import styled from 'styled-components'
-import { Box as RebassBox, Image as RebassImage, Link as RebassLink, Flex as RebassFlex } from 'rebass'
+import { Box as RebassBox } from 'rebass'
 
 import { appContext } from '../context'
 
-const Box = styled(RebassBox)`
+interface IStyled extends SFC {
+  showLayout?: boolean
+}
+const Box = styled(RebassBox)<IStyled>`
   background-color: ${p => p.showLayout ? 'rgba(133, 233, 133, 0.65)' : 'init'};
   padding: 1em 10px;
   bottom: 0px;
@@ -21,8 +24,8 @@ const Box = styled(RebassBox)`
   }
 `
 
-const Footer = props => {
-  const { showLayout, toggleShowLayout } = useContext(appContext)
+const Footer: IStatelessPage = () => {
+  const { showLayout } = useContext(appContext)
 
   return (
     <Box showLayout={showLayout}>

@@ -1,43 +1,50 @@
-import React, { useContext } from 'react'
-import { withRouter } from 'next/router'
+import React, { SFC } from 'react'
+import { withRouter, SingletonRouter } from 'next/router'
+// import styled from '../theme'
 import styled from 'styled-components'
 import getConfig from 'next/config'
-import { Box as RebassBox, Button as RebassButton, Flex as RebassFlex } from 'rebass'
+
+import Grid from '@material-ui/core/Grid'
+// import Card from '@material-ui/core/Card'
+// import Button from '@material-ui/core/Button'
+
+import { Button, Card } from "@blueprintjs/core"
+
 import mime from 'mime-types'
 import "video-react/dist/video-react.css"
 import { Player, BigPlayButton, ControlBar, PlaybackRateMenuButton } from 'video-react'
 
 import { getGuideInfo } from '../core'
-import { appContext } from '../context'
+// import { appContext } from '../context'
 import Header from '../component/Header'
 import Footer from '../component/Footer'
 import ReactMarkdown from 'react-markdown'
 import markdownCss from '../markdownCss'
-import { Page } from '../component/styled'
+import { IStyled } from '../component/styled'
 import { CONST_DIR_NAME } from '../core/constant'
 
 const { publicRuntimeConfig } = getConfig()
 const { SMTV_URL, SMTV_PUBLIC_REPO_URL, SMTV_MANAGER_ID } = publicRuntimeConfig
 
-const Content = styled(RebassBox)`
+const Content = styled(Button)<{ showLayout?: boolean }>`
   margin-bottom: 60px;
   flex: 1 1 0%;
   box-sizing: border-box;
+  c: ${p => p.color};
+  c: ${p => p.showLayout ? 'kj' : 'k'};
 `
-const Container = styled(RebassBox)`
+const Container = styled(Card)<SFC>`
   margin-left: auto;
   margin-right: auto;
   max-width: 960px;
   padding: 0px 20px;
 `
-
-const VideoContainer = styled(RebassBox)`
+const VideoContainer = styled(Card)<SFC>`
   position: relative;
   padding-bottom: 56.25%;
   height: 0px;
 `
-
-const VideoFrame = styled(RebassBox)`
+const VideoFrame = styled(Card)<SFC>`
   position: absolute;
   top: 0px;
   left: 0px;
@@ -49,7 +56,7 @@ const VideoFrame = styled(RebassBox)`
   }
 `
 
-const BigButton = styled(RebassButton)`
+const BigButton = styled(Card)<SFC>`
   height: 4em;
   box-sizing: border-box;
   border-radius: 8px;
@@ -69,31 +76,37 @@ const BigButton = styled(RebassButton)`
   }
 `
 
-const MarkdownStyle = styled(RebassBox)`
+const MarkdownStyle = styled(Card)<IStyled>`
   ${markdownCss}
 `
 
-const lookupMime = src => mime.lookup(src) ? mime.lookup(src) : void 0
+const lookupMime = (src: string) => mime.lookup(src) ? mime.lookup(src) : void 0
 
-const renderers = {
+const customRenderers: ReactMarkdown.Renderers = {
   linkReference: (props) => {
     const videoUrl = props!.href
     const thumbnailUrl = props.children[0]!.props!.src
     // videoUrl, thumbnailUrl 이 아래의 패턴의 경우
     // 비디오 플레이어 자리. 플레이어는 따로 띄우고 있으므로 제거해줌
     if (
-      lookupMime(videoUrl)!.split('/')[0] === 'video'
-      && lookupMime(thumbnailUrl)!.split('/')[0] === 'image'
+      (lookupMime(videoUrl) || '').split('/')[0] === 'video'
+      && (lookupMime(thumbnailUrl) || '').split('/')[0] === 'image'
     ) {
-      return null
+      return <div/>
     }
+    return <a {...props}/>
   },
 }
 
-const Guide: IStatelessPage = props => {
+interface GuideProps {
+  guideInfo: any
+  router: SingletonRouter
+}
+
+const Guide: IStatelessPage<GuideProps> = (props) => {
   const { router } = props
-  const { id, title, videoUrl, text, thumbnailUrl, filename } = props.guideInfo
-  const { showLayout } = useContext(appContext)
+  const { id, videoUrl, text, thumbnailUrl, filename } = props.guideInfo
+  // const { showLayout } = useContext(appContext)
   const issueTitle = encodeURIComponent(`
 영상 가이드(${id}) 관련 문의/제안 드립니다
 `.trim())
@@ -113,7 +126,7 @@ const Guide: IStatelessPage = props => {
   const issue = `${SMTV_PUBLIC_REPO_URL}/issues/new?issue[title]=${issueTitle}&issue[description]=${issueDescription}`
   
   return (
-    <Page>
+    <Grid container spacing={16}>
       <Header />
       <Content>
         <Container>
@@ -132,10 +145,10 @@ const Guide: IStatelessPage = props => {
             </VideoFrame>
           </VideoContainer>
           <MarkdownStyle>
-            <ReactMarkdown source={text} renderers={renderers}/>
+            <ReactMarkdown source={text} renderers={customRenderers}/>
           </MarkdownStyle>
-          <RebassFlex>
-            <BigButton width={[ 1, 1, 1/2 ]} mx={1} bg="magenta">
+          <Grid item xs={12}>
+            <BigButton>
               <a
                 target='_blank'
                 href={issue}
@@ -143,7 +156,7 @@ const Guide: IStatelessPage = props => {
                 질문/제안
               </a>
             </BigButton>
-            <BigButton width={[ 1, 1, 1/2 ]} mx={1} bg="magenta">
+            <BigButton>
               <a
                 target='_blank'
                 href={`${SMTV_PUBLIC_REPO_URL}/edit/master/${CONST_DIR_NAME}/${filename}`}
@@ -151,16 +164,13 @@ const Guide: IStatelessPage = props => {
                 편집
               </a>
             </BigButton>
-          </RebassFlex>
+          </Grid>
         </Container>
       </Content>
       <Footer />
-    </Page>
+    </Grid>
   )
 }
-
-
-
 
 Guide.getInitialProps = async ({ req }) => {
   const guideId = req ? req.params!.guideId : '11'

@@ -1,16 +1,13 @@
 import { withRouter, SingletonRouter } from 'next/router'
-import React, { useContext, SFC } from 'react'
+import React, { useContext } from 'react'
 import getConfig from 'next/config'
 import styled from 'styled-components'
 import { Flex as RebassFlex } from 'rebass'
-import { Link } from './styled'
+import { Link, IStyled } from './styled'
 import { appContext } from '../context'
 
 const { publicRuntimeConfig} = getConfig()
 
-interface IStyled extends SFC {
-  showLayout?: boolean
-}
 interface ITextButtonProps extends IStyled {
   onClick?: () => void
 }
@@ -68,7 +65,7 @@ interface HeaderProps {
   router: SingletonRouter
 }
 
-const Header: IStatelessPage<HeaderProps> = (props: HeaderProps) => {
+const Header: IStatelessPage<HeaderProps> = (props) => {
   const { showLayout, toggleShowLayout } = useContext(appContext)
   const { pathname } = props.router
   const { SMTV_TITLE } = publicRuntimeConfig
