@@ -1,10 +1,10 @@
 import '@babel/register'
 import { parse } from 'url'
-import path from 'path'
-import express from 'express'
-import next from 'next'
+import * as path from 'path'
+import * as express from 'express'
+import * as next from 'next'
 import { getVideoInfoArr, getGuideInfo } from './core/server'
-import tracer from 'tracer'
+import * as tracer from 'tracer'
 
 const logger = tracer.console()
 
